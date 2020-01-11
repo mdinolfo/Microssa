@@ -1,0 +1,97 @@
+#!/usr/bin/expect
+
+#
+# amend-reject.exp
+#
+# Copyright (C) 2015 Michael Dinolfo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+spawn telnet localhost 2500
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: CONNECT\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: NEW TESTA\n";exit}
+	-re {[^T]NEW,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: AMEND TESTA\n";exit}
+	-re {[^T]AMEND,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=5.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: AMEND2 TESTA\n";exit}
+	-re {[^T]AMEND,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=S\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: AMENDREJECT TESTA\n";exit}
+	"Cannot amend side"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: NEWREJECT TESTA\n";exit}
+	"Order already exists in book"
+}
+
+sleep 0.1
+send -- "AMEND,OrderID=TESTA,Symbol=BTX,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: AMENDREJECT2 TESTA\n";exit}
+	"Cannot amend unknown order"
+}
+
+sleep 0.1
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MX,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: AMENDREJECT2 TESTA\n";exit}
+	"Cannot amend customer"
+}
+
+sleep 0.1
+send -- "CANCEL,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=B\r"
+
+expect {
+	timeout {puts "AMENDREJECT FAILED: NEW TESTA\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "END\r"
+
+interact
+puts "SUCCESS"

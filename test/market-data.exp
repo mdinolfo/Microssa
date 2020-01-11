@@ -1,0 +1,326 @@
+#!/usr/bin/expect
+
+#
+# market-data.exp
+#
+# Copyright (C) 2015 Michael Dinolfo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+spawn telnet localhost 2500
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CONNECT OS\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTA,Customer=MD,Symbol=BTC,Side=B,Price=0.99,Quantity=1000.0,AvailableQuantity=1000.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTA\n";exit}
+	-re {[^T]NEW,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTB,Customer=MD,Symbol=BTC,Side=B,Price=1.01,Quantity=800.0,AvailableQuantity=800.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTB\n";exit}
+	-re {[^T]NEW,OrderID=TESTB,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTC,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=200.0,AvailableQuantity=200.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTC\n";exit}
+	-re {[^T]NEW,OrderID=TESTC,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTD,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=700.0,AvailableQuantity=700.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTD\n";exit}
+	-re {[^T]NEW,OrderID=TESTD,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTE,Customer=MD,Symbol=BTC,Side=S,Price=1.05,Quantity=400.0,AvailableQuantity=400.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTE\n";exit}
+	-re {[^T]NEW,OrderID=TESTE,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTF,Customer=MD,Symbol=BTC,Side=B,Price=0.98,Quantity=1000.0,AvailableQuantity=1000.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTF\n";exit}
+	-re {[^T]NEW,OrderID=TESTF,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTG,Customer=MD,Symbol=BTC,Side=B,Price=1.01,Quantity=800.0,AvailableQuantity=800.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTG\n";exit}
+	-re {[^T]NEW,OrderID=TESTG,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTH,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=200.0,AvailableQuantity=200.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTH\n";exit}
+	-re {[^T]NEW,OrderID=TESTH,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTI,Customer=MD,Symbol=BTC,Side=S,Price=1.00,Quantity=700.0,AvailableQuantity=700.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTI\n";exit}
+	-re {[^T]NEW,OrderID=TESTI,Internal}
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTJ,Customer=MD,Symbol=BTC,Side=S,Price=1.03,Quantity=400.0,AvailableQuantity=400.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: NEW TESTJ\n";exit}
+	-re {[^T]NEW,OrderID=TESTJ,Internal}
+}
+
+sleep 0.1
+
+send -- "END\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: DISCONNECT OS\n";exit}
+	"BYE"
+}
+
+sleep 0.1
+
+spawn telnet localhost 2501
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CONNECT PS\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+
+send -- "SUB,BTC\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,100.0,1.01,800.0,0.99,1000.0,0.98,1000.0,OFFER,1.02,200.0,1.02,700.0,1.02,200.0,1.03,400.0,1.05,400.0"
+}
+
+sleep 0.1
+
+send -- "END\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: DISCONNECT PS\n";exit}
+	"BYE"
+}
+
+sleep 0.1
+
+
+spawn telnet localhost 2500
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CONNECT2 OS\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTA,Customer=MD,Symbol=BTC,Side=B,Price=0.99,Quantity=1000.0,AvailableQuantity=1000.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTA\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTB,Customer=MD,Symbol=BTC,Side=B,Price=1.01,Quantity=800.0,AvailableQuantity=800.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTB\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTB,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTC,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=200.0,AvailableQuantity=200.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTC\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTC,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTD,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=700.0,AvailableQuantity=700.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTD\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTD,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTE,Customer=MD,Symbol=BTC,Side=S,Price=1.05,Quantity=400.0,AvailableQuantity=400.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTE\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTE,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTF,Customer=MD,Symbol=BTC,Side=B,Price=0.98,Quantity=1000.0,AvailableQuantity=1000.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTF\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTF,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTG,Customer=MD,Symbol=BTC,Side=B,Price=1.01,Quantity=800.0,AvailableQuantity=800.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTG\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTG,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTH,Customer=MD,Symbol=BTC,Side=S,Price=1.02,Quantity=200.0,AvailableQuantity=200.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTH\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTH,Internal}
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTI,Customer=MD,Symbol=BTC,Side=S,Price=1.00,Quantity=700.0,AvailableQuantity=700.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTI\n";exit}
+	"REJECTCANCEL,OrderID=TESTI,"
+}
+
+sleep 0.1
+
+send -- "CANCEL,OrderID=TESTJ,Customer=MD,Symbol=BTC,Side=S,Price=1.03,Quantity=400.0,AvailableQuantity=400.0,TIF=DAY,ArriveDate=20151003\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CANCEL TESTJ\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTJ,Internal}
+}
+
+sleep 0.1
+
+send -- "END\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: DISCONNECT2 OS\n";exit}
+	"BYE"
+}
+
+sleep 0.1
+
+spawn telnet localhost 2501
+
+expect {
+	timeout {puts "MARKETDATA FAILED: CONNECT PS2\n";exit}
+	"CONNECTED"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT2\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,100.0,1.01,800.0,0.98,1000.0,OFFER,1.02,200.0,1.02,700.0,1.02,200.0,1.03,400.0,1.05,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT3\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,800.0,0.98,1000.0,OFFER,1.02,200.0,1.02,700.0,1.02,200.0,1.03,400.0,1.05,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT4\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,800.0,0.98,1000.0,OFFER,1.02,700.0,1.02,200.0,1.03,400.0,1.05,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT5\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,800.0,0.98,1000.0,OFFER,1.02,200.0,1.03,400.0,1.05,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT6\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,800.0,0.98,1000.0,OFFER,1.02,200.0,1.03,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT7\n";exit}
+	"SNAPSHOT,BTC,BID,1.01,800.0,OFFER,1.02,200.0,1.03,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT8\n";exit}
+	"SNAPSHOT,BTC,OFFER,1.02,200.0,1.03,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT9\n";exit}
+	"SNAPSHOT,BTC,OFFER,1.03,400.0"
+}
+
+expect {
+	timeout {puts "MARKETDATA FAILED: SNAPSHOT10\n";exit}
+	"SNAPSHOT,BTC"
+}
+
+sleep 0.1
+
+send -- "UNSUB,BTC\r"
+
+sleep 0.1
+
+send -- "END\r"
+
+interact
+puts "SUCCESS"

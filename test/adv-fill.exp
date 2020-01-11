@@ -1,0 +1,147 @@
+#!/usr/bin/expect
+
+#
+# adv-fill.exp
+#
+# Copyright (C) 2016 Michael Dinolfo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+spawn telnet localhost 2500
+
+expect {
+	timeout {puts "ADV-FILL FAILED: CONNECT\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=2000.0,AvailableQuantity=2000.0,Side=B,Currency=USD\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTA\n";exit}
+	-re {[^T]NEW,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTB,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=S,Currency=GBP\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTB\n";exit}
+	-re {[^T]NEW,OrderID=TESTB,Internal}
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTC,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=S,Currency=USD\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTC\n";exit}
+	-re {[^T]NEW,OrderID=TESTC,Internal}
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTC\n";exit}
+	"MATCH,OrderID=TESTC,TradePrice=1.0,TradeQuantity=1000.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTA\n";exit}
+	"MATCH,OrderID=TESTA,TradePrice=1.0,TradeQuantity=1000.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: COMPLETE TESTC\n";exit}
+	"COMPLETED,OrderID=TESTC,"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTD,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=500.0,AvailableQuantity=500.0,Side=B,Currency=GBP\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTD\n";exit}
+	-re {[^T]NEW,OrderID=TESTD,Internal}
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTD\n";exit}
+	"MATCH,OrderID=TESTD,TradePrice=1.0,TradeQuantity=500.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTB\n";exit}
+	"MATCH,OrderID=TESTB,TradePrice=1.0,TradeQuantity=500.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: COMPLETE TESTD\n";exit}
+	"COMPLETED,OrderID=TESTD,"
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTZ,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=B,Currency=GBP,MinFillQuantity=1000.0\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTZ\n";exit}
+	-re {[^T]NEW,OrderID=TESTZ,Internal}
+}
+
+sleep 0.1
+send -- "NEW,OrderID=TESTF,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=S,Currency=GBP,MinFillQuantity=1000.0\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: NEW TESTF\n";exit}
+	-re {[^T]NEW,OrderID=TESTF,Internal}
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTF\n";exit}
+	"MATCH,OrderID=TESTF,TradePrice=1.0,TradeQuantity=1000.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: MATCH TESTZ\n";exit}
+	"MATCH,OrderID=TESTZ,TradePrice=1.0,TradeQuantity=1000.0"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: COMPLETE TESTF\n";exit}
+	"COMPLETED,OrderID=TESTZ,"
+}
+
+expect {
+	timeout {puts "ADV-FILL FAILED: COMPLETE TESTZ\n";exit}
+	"COMPLETED,OrderID=TESTF,"
+}
+
+sleep 0.1
+send -- "CANCEL,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=B\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: CANCEL TESTA\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+send -- "CANCEL,OrderID=TESTB,Symbol=BTC,Customer=MD,ArriveDate=20151003,TIF=DAY,Price=1.0,Quantity=1000.0,AvailableQuantity=1000.0,Side=S,Currency=GBP\r"
+
+expect {
+	timeout {puts "ADV-FILL FAILED: CANCEL TESTB\n";exit}
+	-re {[^T]CANCEL,OrderID=TESTB,Internal}
+}
+
+sleep 0.1
+send -- "END\r"
+
+interact
+puts "SUCCESS"

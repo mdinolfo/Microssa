@@ -1,0 +1,76 @@
+#!/usr/bin/expect
+
+#
+# test-suite.exp
+#
+# Copyright (C) 2015 Michael Dinolfo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+spawn ./new-cancel.exp
+
+expect {
+	timeout {puts "ERROR: new-cancel.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+spawn ./fill.exp
+
+expect {
+	timeout {puts "ERROR: fill.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+spawn ./adv-fill.exp
+
+expect {
+	timeout {puts "ERROR: adv-fill.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+spawn ./amend-reject.exp
+
+expect {
+	timeout {puts "ERROR: amend-reject.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+spawn ./market-data.exp
+
+expect {
+	timeout {puts "ERROR: market-data.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+spawn ./errors.exp
+
+expect {
+	timeout {puts "ERROR: errors.exp aborted";exit}
+	"SUCCESS"
+}
+
+sleep 0.5
+
+puts "ALL TESTS SUCCESSFUL"

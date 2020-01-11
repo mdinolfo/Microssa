@@ -1,0 +1,249 @@
+#!/usr/bin/expect
+
+#
+# errors.exp
+#
+# Copyright (C) 2015 Michael Dinolfo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+spawn telnet localhost 2501
+
+expect {
+	timeout {puts "ERRORS FAILED: CONNECT PS\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+
+send -- "SUB,BTC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: SUB BTC\n";exit}
+	"SNAPSHOT"
+}
+
+sleep 0.1
+
+send -- "SUB,BTC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: SUB2 BTC\n";exit}
+	"REJECT,Symbol=BTC,RejectText=Already subscribed"
+}
+
+sleep 0.1
+
+send -- "UNSUB,BTC\r"
+
+sleep 0.1
+
+send -- "UNSUB,BTC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: UNSUB BTC\n";exit}
+	"EJECT,Symbol=BTC,RejectText=Not subscribed"
+}
+
+sleep 0.1
+
+send -- "END\r"
+
+expect {
+	timeout {puts "MARKETDATA FAILED: DISCONNECT PS\n";exit}
+	"BYE"
+}
+
+sleep 0.1
+
+spawn telnet localhost 2500
+
+expect {
+	timeout {puts "ERRORS FAILED: CONNECT OS\n";exit}
+	"CONNECTED"
+}
+
+sleep 0.1
+
+send -- "NEW\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW\n";exit}
+	"REJECTNEW,RejectText=OrderID cannot be blank"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW2\n";exit}
+	"RejectText=Symbol cannot be blank"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW3\n";exit}
+	"RejectText=Customer cannot be blank"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,Source=TESTSUITE\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW5\n";exit}
+	"RejectText=Price 0.0 is zero or negative"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW6\n";exit}
+	"RejectText=Price 0.0 is zero or negative"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW7\n";exit}
+	"RejectText=Quantity 0.0 is zero or negative"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW8\n";exit}
+	"RejectText=  is not a valid side"
+}
+
+sleep 0.1
+
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW9\n";exit}
+	"RejectText= is not a valid time in force"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=IOC,AvailableQuantity=1000.0\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW10\n";exit}
+	"RejectText=New AvailableQuantity 1000.0 is greater than total Quantity 500.0"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=GTC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW11\n";exit}
+	"RejectText=GTC is not a valid time in force"
+}
+
+sleep 0.1
+
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=Q,TIF=IOC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: STUBNEW12\n";exit}
+	"RejectText=Q is not a valid side"
+}
+
+sleep 0.1
+
+
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=IOC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: AMENDNONE\n";exit}
+	"RejectText=Cannot amend unknown order"
+}
+
+sleep 0.1
+
+
+send -- "CANCEL,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=IOC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: CANCELNONE\n";exit}
+	"RejectText=Cannot cancel unknown order"
+}
+
+sleep 0.1
+
+send -- "NEW,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=DAY\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: OKNEW\n";exit}
+	-re {[^T]NEW,OrderID=TESTA,Internal}
+}
+
+sleep 0.1
+
+
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=DM,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=DAY\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: BADAMEND\n";exit}
+	"RejectText=Cannot amend customer"
+}
+
+
+sleep 0.1
+
+
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=B,TIF=DAY\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: BADAMEND3\n";exit}
+	"RejectText=Cannot amend side"
+}
+
+sleep 0.1
+
+
+send -- "AMEND,OrderID=TESTA,Symbol=BTC,Customer=MD,ArriveDate=20151012,Price=12.0,Quantity=500.0,Side=S,TIF=IOC\r"
+
+expect {
+	timeout {puts "ERRORS FAILED: OKAMEND\n";exit}
+	-re {[^T]AMEND,OrderID=TESTA,Internal}
+}
+
+expect {
+	timeout {puts "ERRORS FAILED: OKAMEND\n";exit}
+	"EXPIRED,OrderID=TESTA"
+}
+
+sleep 0.1
+
+send -- "END\r"
+
+interact
+puts "SUCCESS"

@@ -1,0 +1,2 @@
+INSERT INTO `microssa`.`inbound_orders` (`action`, `order_id`, `symbol`, `customer`, `arrive_date`, `tif`, `currency`, `side`, `price`, `quantity`) VALUES ('N', 'TESTA', 'BTX', 'MD', '20170304', 'DAY', 'USD', 'B', '15.2', '1000');
+INSERT INTO `microssa`.`inbound_orders` (`action`, `order_id`, `symbol`, `customer`, `arrive_date`, `tif`, `currency`, `side`, `price`, `quantity`) VALUES ('N', 'TESTB', 'BTX', 'MD', '20170304', 'DAY', 'USD', 'S', '15.2', '1000');
