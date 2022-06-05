@@ -43,6 +43,9 @@ public class Main
     {
         try
         {
+            boolean useFix = Configuration.getInstance().getString("USEFIX").toUpperCase().equals("TRUE");
+            Acceptor acceptor = null;
+
             final Thread mainThread = Thread.currentThread();
             Runtime.getRuntime().addShutdownHook( new Thread() {
                 public void run(){
@@ -74,7 +77,7 @@ public class Main
                 
             }
             
-            if ( Configuration.getInstance().getString("USEFIX").toUpperCase().equals("TRUE") ) {
+            if ( useFix ) {
                 
                 String FIXSettingsFilename = "../cfg/fix-session.cfg";
                 
@@ -84,23 +87,26 @@ public class Main
                 MessageStoreFactory storeFactory = new FileStoreFactory( settings );
                 LogFactory logFactory = new FileLogFactory( settings );
                 MessageFactory messageFactory = new DefaultMessageFactory();
-                Acceptor acceptor = new SocketAcceptor
+                acceptor = new SocketAcceptor
                     ( application, storeFactory, settings, logFactory, messageFactory );
                 
                 acceptor.start();
-                
-                Logger.getInstance().write("Microssa is up.");
-
-                while ( keepRunning ) {
-                    Thread.sleep ( 100 );
-                }
-                
-                Logger.getInstance().write("Received termination signal.");
-
-                // orderly shutdown steps
-                acceptor.stop();
-                Logger.getInstance().write("Microssa shutdown complete.");
             }
+
+            Logger.getInstance().write("Microssa is up.");
+
+            while ( keepRunning ) {
+                Thread.sleep ( 100 );
+            }
+            
+            Logger.getInstance().write("Received termination signal.");
+
+            // orderly shutdown steps
+            if ( useFix ) {
+                acceptor.stop();
+            }
+
+            Logger.getInstance().write("Microssa shutdown complete.");
 
 		}
         catch ( Exception e )

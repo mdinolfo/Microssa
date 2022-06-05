@@ -17,6 +17,8 @@ Version 1.4
 
 * Modern Java pass
 
+* Bugfix: remove startup dependency if not using FIX protocol
+
 
 Version 1.3
 ----
