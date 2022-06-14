@@ -43,7 +43,7 @@ public class Main
     {
         try
         {
-            boolean useFix = Configuration.getInstance().getString("USEFIX").toUpperCase().equals("TRUE");
+            boolean useFix;
             Acceptor acceptor = null;
 
             final Thread mainThread = Thread.currentThread();
@@ -76,6 +76,8 @@ public class Main
                 db.start();
                 
             }
+
+            useFix = Configuration.getInstance().getString("USEFIX").toUpperCase().equals("TRUE");
             
             if ( useFix ) {
                 
