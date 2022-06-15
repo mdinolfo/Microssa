@@ -111,6 +111,9 @@ public class PriceSocket implements Runnable {
         if ( InputLine.equals("END") )
             return "BYE";
 
+        if ( InputLine.equals("PING") )
+            return "";
+
         String[] token = InputLine.split(",");
         String cmd = token[0];
 

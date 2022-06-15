@@ -19,6 +19,8 @@ Version 1.4
 
 * Bugfix: remove startup dependency if not using FIX protocol
 
+* Bugfix: ignore PING messages recieved via sockets
+
 
 Version 1.3
 ----
